@@ -6675,12 +6675,12 @@ async function verificarSuscripcion() {
   window._userPlan = 'gratis';
   try {
     const { doc, getDoc } = window._fbFns;
+    // 1. Verificar colección suscripciones
     const snap = await getDoc(doc(window._fbDb, 'suscripciones', uid));
     if (snap.exists()) {
       const data = snap.data();
       const estado = data.estado_pago || 'pendiente';
       if (estado === 'aprobado') {
-        // Verificar vigencia
         const venc = data.fecha_vencimiento?.toDate ? data.fecha_vencimiento.toDate() : new Date(data.fecha_vencimiento);
         if (venc && venc > new Date()) {
           window._userPlan = data.plan_elegido === 'pro' ? 'pro' : 'gratis';
@@ -6689,6 +6689,16 @@ async function verificarSuscripcion() {
         console.log('Tu pago esta siendo revisado. Mientras tanto puedes usar el plan gratis.');
       } else if (estado === 'rechazado') {
         console.log('Tu ultimo pago fue rechazado. Puedes reintentar el upgrade cuando quieras.');
+      }
+    }
+    // 2. Si aún no es PRO, verificar también el perfil (compatibilidad con aprobaciones anteriores)
+    if (window._userPlan !== 'pro') {
+      const perfilSnap = await getDoc(doc(window._fbDb, 'usuarios', uid, 'perfil', 'info'));
+      if (perfilSnap.exists()) {
+        const perfil = perfilSnap.data();
+        if (perfil.plan === 'pro' || perfil.plan === 'activo') {
+          window._userPlan = 'pro';
+        }
       }
     }
   } catch(e) {
