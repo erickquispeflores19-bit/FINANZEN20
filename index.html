@@ -1073,6 +1073,19 @@ tr:hover td{background:var(--sur2)}
 
   <!-- ══ PLAN PRO ══ -->
   <div class="nav-sec">🔵 Plan PRO</div>
+
+  <!-- Banner PRO — solo visible para usuarios plan gratis -->
+  <div id="sidebarProBanner" style="margin: 8px 12px 6px; display: none;">
+    <div style="background:linear-gradient(135deg,#1a3a6b,#1a5fb4);border-radius:14px;padding:12px 14px;box-shadow:0 4px 16px rgba(26,95,180,0.35)">
+      <div style="font-size:11px;font-weight:800;color:#FFD700;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase">⭐ Plan PRO</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.92);font-weight:500;margin-bottom:2px;line-height:1.4">Desbloquea todas las funciones avanzadas</div>
+      <div style="font-size:13px;color:white;font-weight:800;margin-bottom:10px">$19 USD / S/. 69 · <span style="color:#86efac">pago único · de por vida</span></div>
+      <button onclick="mostrarOverlayPlanes()" style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;background:linear-gradient(135deg,#4A90D9,#639922);color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(74,144,217,0.4);transition:all .2s;font-family:'DM Sans',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        Adquirir Plan PRO aquí →
+      </button>
+    </div>
+  </div>
   <div class="nav-item" onclick="goPage(&#39;presupuesto&#39;,this)">
     <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>Presupuesto
   </div>
@@ -1114,19 +1127,6 @@ tr:hover td{background:var(--sur2)}
   <span class="nav-lock" style="margin-left:auto;font-size:10px;opacity:.5">🚫</span></div>
 
   <div class="nav-sec">⚙️ Config</div>
-
-  <!-- Banner PRO — solo visible para usuarios plan gratis -->
-  <div id="sidebarProBanner" style="margin: 8px 12px 6px; display: none;">
-    <div style="background:linear-gradient(135deg,#1a3a6b,#1a5fb4);border-radius:14px;padding:12px 14px;box-shadow:0 4px 16px rgba(26,95,180,0.35)">
-      <div style="font-size:11px;font-weight:800;color:#FFD700;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase">⭐ Plan PRO</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.92);font-weight:500;margin-bottom:2px;line-height:1.4">Desbloquea todas las funciones avanzadas</div>
-      <div style="font-size:13px;color:white;font-weight:800;margin-bottom:10px">$19 USD / S/. 69 · <span style="color:#86efac">pago único · de por vida</span></div>
-      <button onclick="mostrarOverlayPlanes()" style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;background:linear-gradient(135deg,#4A90D9,#639922);color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(74,144,217,0.4);transition:all .2s;font-family:&#39;DM Sans&#39;,sans-serif" onmouseover="this.style.opacity=&#39;.88&#39;" onmouseout="this.style.opacity=&#39;1&#39;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-        Adquirir Plan PRO aquí →
-      </button>
-    </div>
-  </div>
 
   <div id="sidebarUserInfo">
     <div class="sui-badge"><div class="sui-dot"></div><span id="sidebarUserName">erick</span></div>
@@ -2927,7 +2927,10 @@ async function _enterAppLocal() {
   await cargarModulePermisos();
   actualizarTopBar();
   actualizarNavLocks();
+  actualizarSidebarProBanner();
   goPage('dashboard', document.querySelector('.nav-item'), true);
+  // Respaldo: forzar banner PRO después de que todo cargue
+  setTimeout(() => { actualizarSidebarProBanner(); actualizarTopBar(); }, 2000);
   // Onboarding + alertas
   setTimeout(() => { checkAlertsOnLoad(); checkOnboarding(); }, 800);
 }
