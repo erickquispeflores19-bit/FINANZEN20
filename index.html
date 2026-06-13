@@ -2613,7 +2613,7 @@ let allUsersCache = [];
 const AVATAR_COLORS = ['#1a5fb4','#0F6E56','#534AB7','#854F0B','#A32D2D','#0891b2','#7c3aed','#b45309'];
 function avatarColor(idx) { return AVATAR_COLORS[idx % AVATAR_COLORS.length]; }
 function initials(nombre) { return nombre.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
-function planLabel(plan) { const map={activo:'🟢 Activo',prueba:'🟡 Prueba',inactivo:'🔴 Inactivo'}; return map[plan]||plan; }
+function planLabel(plan) { const map={pro:'👑 PRO',activo:'🟢 Activo',gratis:'🟢 Gratis',prueba:'🟡 Prueba',inactivo:'🔴 Inactivo'}; return map[plan]||plan; }
 function planClass(plan) { const map={activo:'plan-activo',prueba:'plan-prueba',inactivo:'plan-inactivo'}; return map[plan]||'plan-prueba'; }
 
 window._fbLoadUserData = async function(uid) {
@@ -2907,7 +2907,7 @@ window._fbEnterApp = async function(firebaseUser) {
   _enterAppLocal();
 };
 
-function _enterAppLocal() {
+async function _enterAppLocal() {
   document.getElementById('loginScreen').classList.add('hidden');
   updateSidebarUser();
   const fab = document.getElementById('adminFloatBtn');
@@ -2920,15 +2920,14 @@ function _enterAppLocal() {
   document.getElementById('nbTarjetas').textContent  = creditCards.length;
   if(creditCards.length) { ccActivaId=creditCards[0].id; ccCicloIdx=getCCCicloActualIdx(getCCCiclos(creditCards[0])); }
   document.getElementById('nbPrestamos').textContent = prestamos.length;
-  cargarModulePermisos();
-  actualizarTopBar();
-  goPage('dashboard', document.querySelector('.nav-item'), true);
-  // Verificar suscripción (admin siempre pasa)
+  // Primero verificar suscripción, luego cargar permisos de módulos
   if (!isAdmin) {
-    verificarSuscripcion();
-    // Segundo intento con delay para garantizar que Firebase esté listo
-    setTimeout(() => { if (window._userPlan !== 'pro') verificarSuscripcion(); }, 1500);
+    await verificarSuscripcion();
   }
+  await cargarModulePermisos();
+  actualizarTopBar();
+  actualizarNavLocks();
+  goPage('dashboard', document.querySelector('.nav-item'), true);
   // Onboarding + alertas
   setTimeout(() => { checkAlertsOnLoad(); checkOnboarding(); }, 800);
 }
@@ -3061,7 +3060,7 @@ async function adminAprobarPago(uid, nombre) {
     }, { merge: true });
     // 2. Actualizar perfil del usuario
     await setDoc(doc(db, 'usuarios', uid, 'perfil', 'info'), {
-      plan: 'activo'
+      plan: 'pro'
     }, { merge: true });
     alert(`✅ Plan PRO activado para "${nombre}". El usuario ya tiene acceso completo.`);
     renderPagosPendientes();
@@ -6671,8 +6670,6 @@ async function verificarSuscripcion() {
   if (!uid) return;
   // Por defecto TODOS los usuarios entran con plan gratis (sin bloqueo)
   window._userPlan = 'gratis';
-  actualizarNavLocks();
-  ocultarOverlay();
   try {
     const { doc, getDoc } = window._fbFns;
     const snap = await getDoc(doc(window._fbDb, 'suscripciones', uid));
@@ -6683,28 +6680,22 @@ async function verificarSuscripcion() {
         // Verificar vigencia
         const venc = data.fecha_vencimiento?.toDate ? data.fecha_vencimiento.toDate() : new Date(data.fecha_vencimiento);
         if (venc && venc > new Date()) {
-          // Suscripcion PRO vigente - activar plan pro
           window._userPlan = data.plan_elegido === 'pro' ? 'pro' : 'gratis';
-          actualizarNavLocks();
-          ocultarOverlay();
-          return;
         }
-        // Vencida: queda en gratis (ya seteado arriba)
       } else if (estado === 'pendiente') {
-        // Pago pendiente de revision: aviso suave pero NO bloquea
         console.log('Tu pago esta siendo revisado. Mientras tanto puedes usar el plan gratis.');
-        // Opcional: podriamos mostrar una notificacion no bloqueante
       } else if (estado === 'rechazado') {
-        // Pago rechazado: queda en gratis, puede reintentar desde el boton PRO
         console.log('Tu ultimo pago fue rechazado. Puedes reintentar el upgrade cuando quieras.');
       }
-      // Cualquier otro caso: queda en gratis (ya seteado arriba)
     }
-    // Si no existe doc: usuario nuevo, queda en gratis (ya seteado arriba)
   } catch(e) {
     console.error('Error verificando suscripcion:', e);
-    // En error: queda en gratis (ya seteado arriba)
   }
+  // Actualizar currentUser.plan para que el sidebar refleje el estado real
+  if (currentUser) currentUser.plan = window._userPlan;
+  actualizarNavLocks();
+  ocultarOverlay();
+  updateSidebarUser();
 }
 
 function mostrarOverlayPlanes() {
