@@ -2707,7 +2707,12 @@ function showSaveIndicator(state) {
 }
 
 window._fbSaveUserData = async function() {
-  if (!window._fbCurrentUID) return;
+  if (!window._fbCurrentUID) {
+    console.error('[SAVE] No hay _fbCurrentUID — no se puede guardar. isAdmin:', isAdmin, 'currentUser:', currentUser?.id);
+    showSaveIndicator('err');
+    toast('⚠️ No se pudo guardar: sesión no conectada a Firebase','err');
+    return;
+  }
   const { doc, setDoc } = window._fbFns;
   const db = window._fbDb;
   const data = {
@@ -3092,7 +3097,18 @@ async function adminRechazarPago(uid, nombre) {
   }
 }
 function closeAdmin() { document.getElementById('adminScreen').classList.add('hidden'); }
-function doLogin_asAdmin() { closeAdmin(); isAdmin = true; currentUser = { id:'admin', nombre:'Administrador', email:'admin', plan:'activo', colorIdx:0 }; _enterAppLocal(); }
+async function doLogin_asAdmin() {
+  closeAdmin(); isAdmin = true;
+  const uid = window._fbCurrentUID;
+  currentUser = { id: uid || 'admin', nombre:'Administrador', email:'admin', plan:'pro', colorIdx:0 };
+  if (uid) {
+    await window._fbLoadUserData(uid);
+  } else {
+    console.warn('[ADMIN] No hay _fbCurrentUID — los datos NO se guardarán en Firebase');
+    toast('⚠️ Sesión admin sin Firebase Auth — cambios no se guardarán','err');
+  }
+  _enterAppLocal();
+}
 
 async function renderAdminUsers() {
   const grid = document.getElementById('adminUserGrid');
@@ -5083,6 +5099,7 @@ function ccAgregarGasto() {
   document.getElementById('cgCDesc').value='';
   document.getElementById('cgCMonto').value='';
   ccActualizarEquiv();
+  console.log('[CC] Gasto agregado a tarjeta:', c.nombre, '| movimientos:', c.movimientos.length, '| _fbCurrentUID:', window._fbCurrentUID ? 'OK' : 'NULL', '| creditCards:', creditCards.length);
   persistCurrentUser();
   renderCreditCards();
   toast(moneda==='USD' ? 'Cargo de $'+montoOrig.toFixed(2)+' ('+fmt(montoPEN)+') registrado' : 'Cargo de '+fmt(montoPEN)+' registrado');
