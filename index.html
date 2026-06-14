@@ -2152,29 +2152,31 @@ tr:hover td{background:var(--sur2)}
       <div class="card" style="margin-top:0">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="card-title">📋 Todos los movimientos</div>
-          <details style="font-size:12px">
-            <summary style="cursor:pointer;color:var(--t3)">⚙️ Editar tarjeta</summary>
-            <div id="ccEditFormWrap" style="margin-top:10px;padding:12px;background:var(--sur2);border-radius:var(--r2);border:1px solid var(--bor)">
-              <div class="fg fg4" style="margin-bottom:8px">
-                <div><span class="fl">Límite (S/)</span><input type="number" id="ccEditLimiteInp" min="0" step="0.01"></div>
-                <div><span class="fl">Día de corte</span><input type="number" id="ccEditCorteInp" min="1" max="28"></div>
-                <div>
-                  <span class="fl">Días para pagar</span>
-                  <div style="display:flex;gap:4px;align-items:center">
-                    <input type="number" id="ccEditPagoInp" min="1" max="60" placeholder="20" style="width:70px">
-                    <div style="display:flex;gap:2px;flex-wrap:wrap;max-width:100px">
-                      <button onclick="document.getElementById(&#39;ccEditPagoInp&#39;).value=10" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">10</button>
-                      <button onclick="document.getElementById(&#39;ccEditPagoInp&#39;).value=13" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">13</button>
-                      <button onclick="document.getElementById(&#39;ccEditPagoInp&#39;).value=20" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">20</button>
-                      <button onclick="document.getElementById(&#39;ccEditPagoInp&#39;).value=30" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">30</button>
-                    </div>
-                  </div>
+          <button class="btn btn-sm" onclick="document.getElementById('ccEditFormWrap').style.display=document.getElementById('ccEditFormWrap').style.display==='none'?'block':'none'" style="font-size:12px">⚙️ Editar tarjeta</button>
+        </div>
+        <div id="ccEditFormWrap" style="display:none;margin-bottom:12px;padding:14px;background:var(--sur2);border-radius:var(--r2);border:1px solid var(--bor)">
+          <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">✏️ Editar tarjeta de crédito</div>
+          <div class="fg fg4" style="margin-bottom:10px">
+            <div><span class="fl">Límite (S/)</span><input type="number" id="ccEditLimiteInp" min="0" step="0.01"></div>
+            <div><span class="fl">Día de corte</span><input type="number" id="ccEditCorteInp" min="1" max="28"></div>
+            <div>
+              <span class="fl">Días para pagar</span>
+              <div style="display:flex;gap:4px;align-items:center">
+                <input type="number" id="ccEditPagoInp" min="1" max="60" placeholder="20" style="width:70px">
+                <div style="display:flex;gap:2px;flex-wrap:wrap;max-width:100px">
+                  <button onclick="document.getElementById('ccEditPagoInp').value=10" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">10</button>
+                  <button onclick="document.getElementById('ccEditPagoInp').value=13" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">13</button>
+                  <button onclick="document.getElementById('ccEditPagoInp').value=20" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">20</button>
+                  <button onclick="document.getElementById('ccEditPagoInp').value=30" style="font-size:10px;padding:1px 5px;border:1px solid var(--bor);border-radius:4px;background:var(--sur2);cursor:pointer;color:var(--t2)">30</button>
                 </div>
-                <div><span class="fl">Tasa mensual (%)</span><input type="number" id="ccEditTasaInp" min="0" step="0.01"></div>
               </div>
-              <button class="btn btn-sm btn-blue" onclick="ccGuardarEdicion()">Guardar cambios</button>
             </div>
-          </details>
+            <div><span class="fl">Tasa mensual (%)</span><input type="number" id="ccEditTasaInp" min="0" step="0.01"></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm btn-blue" onclick="ccGuardarEdicion()">💾 Guardar cambios</button>
+            <button class="btn btn-sm" onclick="document.getElementById('ccEditFormWrap').style.display='none'">Cancelar</button>
+          </div>
         </div>
         <div id="ccHistorialMovs"><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th style="text-align:right">Monto</th><th></th></tr></thead><tbody><tr><td style="color:var(--t2);font-size:12px">2026-05-09</td>
       <td><strong>almuerzo</strong> <span style="font-size:11px;color:var(--t3)">(Alimentación)</span></td>
