@@ -2745,13 +2745,14 @@ window._fbSaveUserData = async function() {
       intentos++;
       console.error('Error guardando (intento '+intentos+'):', e);
       if(intentos >= 3) {
-        showSaveIndicator('err');
         const code = e?.code || e?.message || String(e);
-        console.error('Fallo definitivo al guardar. Código:', code, e);
-        // Mostrar código de error para diagnóstico
-        if(code.includes('permission') || code.includes('PERMISSION')) {
-          const el = document.getElementById('_saveIndicator');
-          if(el) el.innerHTML = '⚠️ Sin permiso de escritura en Firebase';
+        console.error('Fallo definitivo al guardar. Código:', code, 'UID:', window._fbCurrentUID, 'Size:', Math.round(byteSize/1024)+'KB', e);
+        showSaveIndicator('err');
+        const el = document.getElementById('_saveIndicator');
+        if(el) {
+          el.style.pointerEvents = 'auto'; el.style.cursor = 'pointer';
+          el.innerHTML = '⚠️ Error: ' + code.substring(0,80);
+          el._hideTimer = setTimeout(()=>{ el.style.opacity='0'; el.style.pointerEvents='none'; }, 10000);
         }
       } else {
         await new Promise(r => setTimeout(r, 1000 * intentos));
