@@ -2733,12 +2733,23 @@ window._fbSaveUserData = async function() {
       data.txs = txs;
     }
   }
+  // Limpiar undefined recursivamente (Firestore no acepta undefined)
+  function cleanUndefined(obj) {
+    if(Array.isArray(obj)) return obj.map(cleanUndefined);
+    if(obj && typeof obj==='object' && !(obj instanceof Date)) {
+      const clean = {};
+      for(const [k,v] of Object.entries(obj)) { if(v!==undefined) clean[k]=cleanUndefined(v); }
+      return clean;
+    }
+    return obj;
+  }
+  const cleanData = cleanUndefined(data);
   console.log('[SAVE] Guardando — cuentas:', accounts.length, 'txs:', txs.length, 'CC:', creditCards.length, 'size aprox:', Math.round(byteSize/1024)+'KB');
   showSaveIndicator('saving');
   let intentos = 0;
   while(intentos < 3) {
     try {
-      await setDoc(doc(db, 'usuarios', window._fbCurrentUID, 'datos', 'finanzas'), data);
+      await setDoc(doc(db, 'usuarios', window._fbCurrentUID, 'datos', 'finanzas'), cleanData);
       showSaveIndicator('ok');
       return;
     } catch(e) {
@@ -3991,7 +4002,9 @@ function addTransfer() {
   }
   if(from.balance<monto) toast('Advertencia: saldo insuficiente en "'+from.name+'"','warn');
   from.balance-=monto; to.balance+=montoDestino;
-  transfers.unshift({id:Date.now(),monto,montoDestino,fromMoneda:fMon,toMoneda:tMon,tc:fMon!==tMon?tc:undefined,fromId,toId,fromName:from.name,fromIcon:from.icon,toName:to.name,toIcon:to.icon,desc,fecha});
+  const tr = {id:Date.now(),monto,montoDestino,fromMoneda:fMon,toMoneda:tMon,fromId,toId,fromName:from.name,fromIcon:from.icon,toName:to.name,toIcon:to.icon,desc,fecha};
+  if(fMon!==tMon) tr.tc=tc;
+  transfers.unshift(tr);
   clearTransferForm(); updBal('t'); tCheckConversion(); renderTransfers(); refreshSelects();
   const sym = fMon==='USD'?'$':'S/ ';
   toast('Transferencia de '+sym+monto.toFixed(2)+tcInfo+' realizada');
@@ -5093,7 +5106,9 @@ function ccAgregarGasto() {
   if(!desc||!montoOrig||!fecha){toast('Completa descripcion, monto y fecha','err');return;}
   const montoPEN = parseFloat((montoOrig * tc).toFixed(2));
   if(!c.movimientos) c.movimientos=[];
-  c.movimientos.push({id:'g'+Date.now(),tipo:'gasto',desc,monto:montoPEN,montoOrig:moneda==='USD'?montoOrig:undefined,moneda,tc:moneda==='USD'?tc:undefined,cat,fecha});
+  const mov = {id:'g'+Date.now(),tipo:'gasto',desc,monto:montoPEN,moneda,cat,fecha};
+  if(moneda==='USD'){ mov.montoOrig=montoOrig; mov.tc=tc; }
+  c.movimientos.push(mov);
   if(moneda==='USD') c.deudaUSD = parseFloat(((c.deudaUSD||0) + montoOrig).toFixed(6));
   else               c.deudaPEN = parseFloat(((c.deudaPEN||0) + montoPEN).toFixed(2));
   c.deuda = parseFloat(((c.deudaPEN||0) + (c.deudaUSD||0)*(c._tcRef||3.70)).toFixed(2));
@@ -5282,20 +5297,11 @@ function ccRegistrarPago() {
     return;
   }
   if(!c.movimientos) c.movimientos=[];
-  c.movimientos.push({
-    id:'p'+Date.now(), tipo:'pago',
-    desc:'Pago tarjeta '+c.nombre,
-    monto: montoOrig,
-    montoOrigPago: montoOrig,
-    monedaPago,
-    tcPago: monedaPago==='USD' ? tcPago : undefined,
-    cicloIdx: cicloIdx,
-    cicloLabel: cicloPagoLabel,
-    // Guardamos las fechas reales del ciclo para no depender del índice
-    cicloInicio: ciclos[cicloIdx]?.inicio?.toISOString(),
-    cicloCorte:  ciclos[cicloIdx]?.corte?.toISOString(),
-    fecha, cuentaId:acId
-  });
+  const pago = {id:'p'+Date.now(), tipo:'pago', desc:'Pago tarjeta '+c.nombre, monto:montoOrig, montoOrigPago:montoOrig, monedaPago, cicloIdx, cicloLabel:cicloPagoLabel, fecha, cuentaId:acId};
+  if(monedaPago==='USD') pago.tcPago=tcPago;
+  if(ciclos[cicloIdx]?.inicio) pago.cicloInicio=ciclos[cicloIdx].inicio.toISOString();
+  if(ciclos[cicloIdx]?.corte) pago.cicloCorte=ciclos[cicloIdx].corte.toISOString();
+  c.movimientos.push(pago);
   // Reducir deuda en la moneda correcta
   if(monedaPago==='USD') {
     c.deudaUSD = Math.max(0, parseFloat(((c.deudaUSD||0) - montoOrig).toFixed(6)));
