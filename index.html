@@ -6677,6 +6677,7 @@ function actualizarNavLocks() {
     const perm = window._modulePermisos[id] || 'gratis';
     const oldLock = nav.querySelector('.nav-lock');
     if (oldLock) oldLock.remove();
+               if (isAdmin) return;
     if (perm === 'restringido') {
       nav.insertAdjacentHTML('beforeend', '<span class="nav-lock" style="margin-left:auto;font-size:10px;opacity:.5">🚫</span>');
     } else if (perm === 'pro' && window._userPlan !== 'pro') {
@@ -8268,4 +8269,4 @@ function guardarHTML() {
   </a>
 </div>
 
-<div class="glasp-extension-toaster" style="display: block; width: 320px; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; top: 40px; right: 24px; z-index: 9999;"><template shadowrootmode="open"><div class="glasp-extension" style="font-family: inherit;"></div></template></div></body><div class="glasp-extension" style="display: block; width: unset; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; bottom: 16px; right: 16px; z-index: 9999;"><div class="glasp-extension" style="font-family: inherit;"></div></div></html>��������������������������������������������������������������������������������������������������������������������������������������������
+<div class="glasp-extension-toaster" style="display: block; width: 320px; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; top: 40px; right: 24px; z-index: 9999;"><template shadowrootmode="open"><div class="glasp-extension" style="font-family: inherit;"></div></template></div></body><div class="glasp-extension" style="display: block; width: unset; margin: unset; padding: unset; border: unset; border-radius: unset; outline: unset; background-color: unset; box-shadow: unset; position: fixed; bottom: 16px; right: 16px; z-index: 9999;"><div class="glasp-extension" style="font-family: inherit;"></div></div></html>
